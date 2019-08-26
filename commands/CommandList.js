@@ -6,6 +6,7 @@ let commands = [
     `${prefix}resume - Resume current track`,
     `${prefix}stop - Stop current track`,
     `${prefix}queue - View queue of tracks`,
+    `${prefix}delete - Input size of delete messages(1-100)`,
     `${prefix}help - Show advanced usage of a command`]
 
 let show = function showCommands(message) {

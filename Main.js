@@ -34,6 +34,8 @@ bot.on('message', async message => {
         actions.stop(message);
     } else if (message.content.startsWith(`${prefix}queue`)) {
         actions.queue(message);
+    } else if (message.content.startsWith(`${prefix}delete`)) {
+        actions.deleteMessages(message);
     } else if (message.content.startsWith(`${prefix}help`)) {
         commands(message);
     } else if (message.content.startsWith(`${prefix}`)) {

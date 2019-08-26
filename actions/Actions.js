@@ -1,11 +1,12 @@
-const youtube = require('ytdl-core');
+const ytdl = require('ytdl-core');
 const utils = require('../utils/Utils.js');
+const youtubeApi = require('simple-youtube-api');
+const youtube = new youtubeApi(process.env.youtube_api_key);
 const queue = new Map();
 
 async function execute(message) {
     const args = message.content.split(' ');
     const voiceChannel = message.member.voiceChannel;
-    const serverQueue = queue.get(message.guild.id);
 
     if (!voiceChannel)
         return message.channel.sendMessage('You need to be in a voice channel to play music!');
@@ -15,21 +16,65 @@ async function execute(message) {
         return message.channel.sendMessage('I need the permissions to join and speak in your voice channel!');
     }
 
-    let songInfo = {};
-    let song = {};
-
-    try {
-        songInfo = await youtube.getInfo(args[1]);
-        song = {
-            title: songInfo.title,
-            url: songInfo.video_url
-        };
-    } catch (err) {
-        return message.channel.sendMessage('Something goes wrong, try to put link from youtube!')
+    if (message.content.match(/^.*(youtu.be\/|list=)([^#\&\?]*).*/)) {
+        try {
+            const playListUrl = utils.getMessageContentAfterCommand(message);
+            const playList = await youtube.getPlaylist(playListUrl);
+            const videos = await playList.getVideos();
+            for (let i = 0; i < videos.length; i++) {
+                startPlayOrAddMusicToQueue(message, videos[i].title, videos[i].url, false);
+            }
+            return;
+        } catch (e) {
+            console.error(e);
+            return message.channel.sendMessage('Playlist is either private or it does not exist');
+        }
     }
 
+    if (message.content.match(/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/)) {
+        try {
+            let songInfo = await ytdl.getInfo(args[1]);
+            return startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.video_url, true);
+        } catch (err) {
+            console.error(err);
+            return message.channel.sendMessage('Something goes wrong, try to put link from youtube!')
+        }
+    }
 
-    message.channel.sendMessage(`${song.title} ${song.url}`);
+    try {
+        const musicName = utils.getMessageContentAfterCommand(message);
+        const searchedResult = await youtube.searchVideos(musicName, 5);
+        message.channel.sendMessage(utils.getMessageOfSearchedResult(searchedResult));
+        try {
+            var response = await message.channel.awaitMessages(
+                msg => (msg.content > 0 && msg.content < 6) || msg.content === 'exit', {
+                    max: 1,
+                    maxProcessed: 1,
+                    time: 60000,
+                    errors: ['time']
+                }
+            );
+            if (msg.content === 'exit')
+                return;
+            let videoIndex = parseInt(response.first().content);
+            return startPlayOrAddMusicToQueue(message, searchedResult[videoIndex - 1].title, searchedResult[videoIndex - 1].url, true);
+        } catch (e) {
+            console.error(e);
+            return message.channel.sendMessage('Please try again and enter a number between 1 and 5 or exit');
+        }
+    } catch (error) {
+        console.error(error);
+        return message.channel.sendMessage('Something goes wrong with searching video that you requested');
+    }
+}
+
+async function startPlayOrAddMusicToQueue(message, musicTitle, musicUrl, isShowAddedToQueue) {
+    const serverQueue = queue.get(message.guild.id);
+    const voiceChannel = message.member.voiceChannel;
+    let song = {
+        title: musicTitle,
+        url: musicUrl
+    };
 
     if (!serverQueue) {
         const queueContruct = {
@@ -44,8 +89,8 @@ async function execute(message) {
         queueContruct.songs.push(song);
 
         try {
-            var connection = await voiceChannel.join();
-            queueContruct.connection = connection;
+            queueContruct.connection = await voiceChannel.join();
+            message.channel.sendMessage(`${song.title} ${song.url}`);
             message.delete(5);
             play(message.guild, queueContruct.songs[0]);
         } catch (err) {
@@ -57,7 +102,9 @@ async function execute(message) {
     } else {
         serverQueue.songs.push(song);
         console.log(serverQueue.songs);
-        return message.channel.sendMessage(`${song.title} has been added to the queue!`);
+        if (isShowAddedToQueue)
+            return message.channel.sendMessage(`${song.title} has been added to the queue!`);
+        return;
     }
 }
 
@@ -69,7 +116,7 @@ function play(guild, song) {
         return;
     }
 
-    const dispatcher = serverQueue.connection.playStream(youtube(song.url))
+    const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
         .on('end', () => {
             console.log('Music ended!');
             serverQueue.songs.shift();
@@ -124,7 +171,7 @@ function pause(message) {
     if (!message.member.voiceChannel)
         return message.channel.sendMessage('You have to be in a voice channel to see the queue!');
 
-    const serverQueue = queue.get(queue.keys().next().value);
+    const serverQueue = queue.get(message.guild.id);
     serverQueue.connection.dispatcher.pause();
     return message.channel.sendMessage('Music was paused');
 }
@@ -138,9 +185,28 @@ function resume(message) {
     if (!message.member.voiceChannel)
         return message.channel.sendMessage('You have to be in a voice channel to see the queue!');
 
-    const serverQueue = queue.get(queue.keys().next().value);
+    const serverQueue = queue.get(message.guild.id);
     serverQueue.connection.dispatcher.resume();
     return message.channel.sendMessage('Music was resumed');
+}
+
+async function deleteMessages(message) {
+    try {
+        let deleteCount = parseInt(utils.getMessageContentAfterCommand(message));
+        if (!deleteCount || deleteCount < 1 || deleteCount >= 100)
+            return message.channel.sendMessage('Please provide a number between 1 and 100 for the number of messages to delete')
+
+        message.channel
+            .bulkDelete(deleteCount)
+            .then(messages => message.channel.sendMessage(`Deleted ${messages.size} messages`))
+            .catch(e => {
+                console.error(e);
+                return message.channel.sendMessage('Something went wrong when trying to delete messages :(');
+            })
+    } catch (e) {
+        console.log(e);
+        return message.channel.sendMessage('Please provide the number of messages to delete. (max 100)');
+    }
 }
 
 module.exports = {
@@ -149,5 +215,6 @@ module.exports = {
     pause: pause,
     resume: resume,
     queue: showQueue,
-    stop: stop
+    stop: stop,
+    deleteMessages: deleteMessages
 };
