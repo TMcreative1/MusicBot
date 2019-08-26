@@ -193,7 +193,7 @@ function resume(message) {
 async function deleteMessages(message) {
     try {
         let deleteCount = parseInt(utils.getMessageContentAfterCommand(message));
-        if (!deleteCount || deleteCount < 1 || deleteCount >= 100)
+        if (!deleteCount || deleteCount < 1 || deleteCount > 100)
             return message.channel.sendMessage('Please provide a number between 1 and 100 for the number of messages to delete')
 
         message.channel
