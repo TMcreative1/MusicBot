@@ -31,7 +31,7 @@ async function execute(message) {
         }
     }
 
-    if (message.content.match(/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/)) {
+    if (message.content.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/)) {
         try {
             let songInfo = await ytdl.getInfo(args[1]);
             return startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.video_url, true);
@@ -54,7 +54,7 @@ async function execute(message) {
                     errors: ['time']
                 }
             );
-            if (msg.content === 'exit')
+            if (response.first().content === 'exit')
                 return;
             let videoIndex = parseInt(response.first().content);
             return startPlayOrAddMusicToQueue(message, searchedResult[videoIndex - 1].title, searchedResult[videoIndex - 1].url, true);
