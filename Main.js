@@ -3,9 +3,10 @@ const bot = new discord.Client();
 const commands = require('./commands/CommandList.js');
 const actions = require('./actions/Actions.js');
 
-let config = require('./config/BotConfig.json');
-let token = process.env.token;
-let prefix = config.prefix;
+const config = require('./config/BotConfig.json');
+const utils = require("./utils/Utils.js")
+const token = process.env.token;
+const prefix = config.prefix;
 
 bot.once('ready', () => {
     console.log('Ready!');
@@ -22,24 +23,35 @@ bot.on('message', async message => {
     
     if (!message.content.startsWith(prefix)) return;
 
-    if (message.content.startsWith(`${prefix}play`)) {
-        actions.execute(message);
-    } else if (message.content.startsWith(`${prefix}skip`)) {
-        actions.skip(message);
-    } else if (message.content.startsWith(`${prefix}pause`)) {
-        actions.pause(message);
-    } else if (message.content.startsWith(`${prefix}resume`)) {
-        actions.resume(message);
-    } else if (message.content.startsWith(`${prefix}stop`)) {
-        actions.stop(message);
-    } else if (message.content.startsWith(`${prefix}queue`)) {
-        actions.queue(message);
-    } else if (message.content.startsWith(`${prefix}delete`)) {
-        actions.deleteMessages(message);
-    } else if (message.content.startsWith(`${prefix}help`)) {
-        commands(message);
-    } else if (message.content.startsWith(`${prefix}`)) {
-        message.channel.sendMessage(`Sorry, unknown command, use !help for list of commands`);
+    let command = utils.getCommandFromMessage(message);
+
+    switch (command) {
+        case `${prefix}play`:
+            await actions.execute(message);
+            break;
+        case `${prefix}skip`:
+            actions.skip(message);
+            break;
+        case `${prefix}pause`:
+            actions.pause(message);
+            break;
+        case `${prefix}resume`:
+            actions.resume(message);
+            break;
+        case `${prefix}stop`:
+            actions.stop(message)
+            break;
+        case `${prefix}queue`:
+            actions.queue(message);
+            break;
+        case `${prefix}delete`:
+            await actions.deleteMessages(message);
+            break;
+        case `${prefix}help`:
+            commands(message);
+            break;
+        default:
+            message.channel.sendMessage(`Sorry, unknown command, use !help for list of commands`);
     }
 
 });
