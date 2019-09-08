@@ -35,7 +35,11 @@ async function execute(message) {
 
     if (message.content.match(youtubeVideoRegex)) {
         try {
-            let songInfo = await youtube.search(args[1]);
+            const videoId = args[1]
+                .replace(/(>|<)/gi, '')
+                .split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/)[2]
+                .split(/[^0-9a-z_\-]/i)[0];
+            const songInfo = await youtube.getVideoByID(videoId);
             return await startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.url, true);
         } catch (err) {
             console.error(err);
