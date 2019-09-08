@@ -3,8 +3,8 @@ const utils = require('../utils/Utils.js');
 const youtubeApi = require('simple-youtube-api');
 const youtube = new youtubeApi(process.env.youtube_api_key);
 const queue = new Map();
-const youtubePlayListRegex = "/^.*(youtu.be\\/|list=)([^#\\&\\?]*).*/";
-const youtubeVideoRegex = "/^.*(?:(?:youtu\\.be\\/|v\\/|vi\\/|u\\/\\w\\/|embed\\/)|(?:(?:watch)?\\?v(?:i)?=|\\&v(?:i)?=))([^#\\&\\?]*).*/";
+const youtubePlayListRegex = new RegExp("^.*(youtu.be\\/|list=)([^#\\&\\?]*).*");
+const youtubeVideoRegex = new RegExp("^.*(?:(?:youtu\\.be\\/|v\\/|vi\\/|u\\/\\w\\/|embed\\/)|(?:(?:watch)?\\?v(?:i)?=|\\&v(?:i)?=))([^#\\&\\?]*).*");
 
 async function execute(message) {
     const args = message.content.split(' ');
@@ -24,7 +24,8 @@ async function execute(message) {
             const playList = await youtube.getPlaylist(playListUrl);
             const videos = await playList.getVideos();
             for (let i = 0; i < videos.length; i++) {
-                await startPlayOrAddMusicToQueue(message, videos[i].title, videos[i].url, false);
+                let songInfo = await youtube.getVideoByID(videos[i].id);
+                await startPlayOrAddMusicToQueue(message, songInfo, false);
             }
             return;
         } catch (e) {
@@ -35,12 +36,8 @@ async function execute(message) {
 
     if (message.content.match(youtubeVideoRegex)) {
         try {
-            const videoId = args[1]
-                .replace(/(>|<)/gi, '')
-                .split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/)[2]
-                .split(/[^0-9a-z_\-]/i)[0];
-            const songInfo = await youtube.getVideoByID(videoId);
-            return await startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.url, true);
+            const songInfo = await youtube.getVideoByID(utils.getVideoIdFromUrl(args[1]));
+            return await startPlayOrAddMusicToQueue(message, songInfo, true);
         } catch (err) {
             console.error(err);
             return await message.channel.sendMessage('Something goes wrong, try to put link from youtube!')
@@ -50,7 +47,7 @@ async function execute(message) {
     try {
         const musicName = utils.getMessageContentAfterCommand(message);
         const searchedResult = await youtube.searchVideos(musicName, 5);
-        await message.channel.sendMessage(utils.getMessageOfSearchedResult(searchedResult));
+        await message.channel.sendMessage(await utils.getMessageOfSearchedResult(searchedResult));
         try {
             let response = await message.channel.awaitMessages(
                 msg => (msg.content > 0 && msg.content < 6) || msg.content === 'exit', {
@@ -62,8 +59,9 @@ async function execute(message) {
             );
             if (response.first().content === 'exit')
                 return;
-            let videoIndex = parseInt(response.first().content);
-            return await startPlayOrAddMusicToQueue(message, searchedResult[videoIndex - 1].title, searchedResult[videoIndex - 1].url, true);
+            let videoIndex = parseInt(response.first().content) - 1;
+            const songInfo = await youtube.getVideoByID(utils.getVideoIdFromUrl(searchedResult[videoIndex].url));
+            return await startPlayOrAddMusicToQueue(message, songInfo, true);
         } catch (e) {
             console.error(e);
             return await message.channel.sendMessage('Please try again and enter a number between 1 and 5 or exit');
@@ -74,12 +72,13 @@ async function execute(message) {
     }
 }
 
-async function startPlayOrAddMusicToQueue(message, musicTitle, musicUrl, isShowAddedToQueue) {
+async function startPlayOrAddMusicToQueue(message, songInfo, isShowAddedToQueue) {
     const serverQueue = queue.get(message.guild.id);
     const voiceChannel = message.member.voiceChannel;
     let song = {
-        title: musicTitle,
-        url: musicUrl
+        title : songInfo.title,
+        url : songInfo.url,
+        duration : utils.getPrettySongDuration(songInfo.duration)
     };
 
     if (!serverQueue) {

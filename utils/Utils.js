@@ -1,3 +1,6 @@
+const youtubeApi = require('simple-youtube-api');
+const youtube = new youtubeApi("AIzaSyDoxlmtdrfckN_4pUXoeyz9J0q6oBBu6zk");
+
 function isEmpty(obj) {
     for (let key of obj.keys())
         return false;
@@ -13,10 +16,11 @@ function getConcatenateValueFromMap(map) {
     return result;
 }
 
-function getMessageOfSearchedResult(searchedResult) {
+async function getMessageOfSearchedResult(searchedResult) {
     let message = 'Choose a song by commenting a number between 1 and 5 or exit\n';
     for (let i = 0; i < searchedResult.length; i++) {
-        message += `Song ${i + 1} - ${searchedResult[i].title} (${searchedResult[i].duration})\n`;
+        let songInfo = await youtube.getVideoByID(getVideoIdFromUrl(searchedResult[i].url));
+        message += `Song ${i + 1} - ${songInfo.title} (${getPrettySongDuration(songInfo.duration)})\n`;
     }
 
     return message;
@@ -32,10 +36,38 @@ function getMessageContentAfterCommand(message) {
     return message.content.substr(message.content.indexOf(" ") + 1);
 }
 
+function getVideoIdFromUrl(url) {
+    return url
+        .replace(/(>|<)/gi, '')
+        .split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/)[2]
+        .split(/[^0-9a-z_\-]/i)[0]
+}
+
+function getPrettySongDuration(duration) {
+    let result = "";
+
+    if (duration.hours) {
+        result += duration.hours < 10 ? `0${duration.hours}:` : `${duration.hours}:`
+    }
+
+    if (duration.minutes) {
+        result += duration.minutes < 10 ? `0${duration.minutes}:` : `${duration.minutes}:`
+    }
+
+    if (duration.seconds) {
+        result += duration.seconds < 10 ? `0${duration.seconds}` : `${duration.seconds}`
+    }
+
+    return result;
+
+}
+
 module.exports = {
     isEmpty: isEmpty,
     getConcatenateValueFromMap : getConcatenateValueFromMap,
     getMessageOfSearchedResult : getMessageOfSearchedResult,
     getCommandFromMessage: getCommandFromMessage,
-    getMessageContentAfterCommand : getMessageContentAfterCommand
+    getMessageContentAfterCommand : getMessageContentAfterCommand,
+    getVideoIdFromUrl : getVideoIdFromUrl,
+    getPrettySongDuration : getPrettySongDuration
 };
