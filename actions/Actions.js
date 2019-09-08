@@ -35,8 +35,8 @@ async function execute(message) {
 
     if (message.content.match(youtubeVideoRegex)) {
         try {
-            let songInfo = await ytdl.getInfo(args[1]);
-            return await startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.video_url, true);
+            let songInfo = await youtube.getVideo(args[1])
+            return await startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.url, true);
         } catch (err) {
             console.error(err);
             return await message.channel.sendMessage('Something goes wrong, try to put link from youtube!')
