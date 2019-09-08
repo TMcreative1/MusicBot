@@ -1,5 +1,5 @@
 const youtubeApi = require('simple-youtube-api');
-const youtube = new youtubeApi("AIzaSyDoxlmtdrfckN_4pUXoeyz9J0q6oBBu6zk");
+const youtube = new youtubeApi(process.env.youtube_api_key);
 
 function isEmpty(obj) {
     for (let key of obj.keys())
