@@ -35,7 +35,7 @@ async function execute(message) {
 
     if (message.content.match(youtubeVideoRegex)) {
         try {
-            let songInfo = await youtube.getVideo(args[1])
+            let songInfo = await youtube.search(args[1]);
             return await startPlayOrAddMusicToQueue(message, songInfo.title, songInfo.url, true);
         } catch (err) {
             console.error(err);
