@@ -155,7 +155,7 @@ function skipTo(message) {
         const typeNumber = parseInt(utils.getMessageContentAfterCommand(message));
         if (typeNumber < 1 || typeNumber > queueSize)
             return message.channel.sendMessage(`Try to input number between 1 and ${queueSize}`);
-        for (let i = 0; i < typeNumber - 1; i++)
+        for (let i = 0; i < typeNumber - 2; i++)
             serverQueue.songs.shift();
 
         serverQueue.connection.dispatcher.end();
