@@ -160,7 +160,7 @@ function skipTo(message) {
 
         serverQueue.connection.dispatcher.end();
     } catch (e) {
-        return message.channel.sendMessage(`Try to input number between 1 and ${queueSize}`);
+        return message.channel.sendMessage(`Something goes wrong, try it again`);
     }
 }
 
