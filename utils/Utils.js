@@ -9,9 +9,10 @@ function isEmpty(obj) {
 
 function getConcatenateValueFromMap(map) {
     let result = 'Here is a list of tracks\n';
+    let songPosition = 0;
     for (let value of map.values())
         for (let song of value.songs)
-            result += `${song.title} (${song.duration})\n`;
+            result += `${++songPosition} - ${song.title} (${song.duration})\n`;
 
     return result;
 }
