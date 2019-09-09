@@ -52,10 +52,14 @@ function getPrettySongDuration(duration) {
 
     if (duration.minutes) {
         result += duration.minutes < 10 ? `0${duration.minutes}:` : `${duration.minutes}:`
+    } else {
+        result += '00:';
     }
 
     if (duration.seconds) {
         result += duration.seconds < 10 ? `0${duration.seconds}` : `${duration.seconds}`
+    } else {
+        result += '00';
     }
 
     return result;
