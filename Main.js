@@ -32,6 +32,9 @@ bot.on('message', async message => {
         case `${prefix}skip`:
             actions.skip(message);
             break;
+        case `${prefix}skipTo`:
+            actions.skipTo(message);
+            break;
         case `${prefix}pause`:
             actions.pause(message);
             break;

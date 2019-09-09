@@ -141,6 +141,29 @@ function skip(message) {
     serverQueue.connection.dispatcher.end();
 }
 
+function skipTo(message) {
+    if (utils.isEmpty(queue)) {
+        return message.channel.sendMessage('No one song in the queue!');
+    }
+
+    if (!message.member.voiceChannel)
+        return message.channel.sendMessage('You have to be in a voice channel to skip the music!');
+
+    const queueSize = queue.size;
+    try {
+        const typeNumber = parseInt(utils.getMessageContentAfterCommand(message)) - 1;
+        if (typeNumber < 0 || typeNumber > queueSize)
+            return message.channel.sendMessage(`Try to input number between 1 and ${queueSize}`);
+        const serverQueue = queue.get(message.guild.id);
+        for (let i = 0; i < queueSize - typeNumber; i++)
+            queue.shift();
+
+        serverQueue.connection.dispatcher.end();
+    } catch (e) {
+        return message.channel.sendMessage(`Try to input number between 1 and ${queueSize}`);
+    }
+}
+
 function stop(message) {
     if (utils.isEmpty(queue)) {
         message.channel.sendMessage('No one song in the queue!');
@@ -216,6 +239,7 @@ async function deleteMessages(message) {
 module.exports = {
     execute: execute,
     skip: skip,
+    skipTo: skipTo,
     pause: pause,
     resume: resume,
     queue: showQueue,
