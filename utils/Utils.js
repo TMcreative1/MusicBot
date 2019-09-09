@@ -66,15 +66,6 @@ function getPrettySongDuration(duration) {
 
 }
 
-function getMapSize(map) {
-    let size = 0;
-    for (let value of map.values())
-        for (let song of value.songs)
-            size++;
-
-    return size
-}
-
 module.exports = {
     isEmpty: isEmpty,
     getConcatenateValueFromMap : getConcatenateValueFromMap,
@@ -83,5 +74,4 @@ module.exports = {
     getMessageContentAfterCommand : getMessageContentAfterCommand,
     getVideoIdFromUrl : getVideoIdFromUrl,
     getPrettySongDuration : getPrettySongDuration,
-    getMapSize : getMapSize
 };

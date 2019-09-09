@@ -149,14 +149,14 @@ function skipTo(message) {
     if (!message.member.voiceChannel)
         return message.channel.sendMessage('You have to be in a voice channel to skip the music!');
 
-    let queueSize = utils.getMapSize(queue);
+    const serverQueue = queue.get(message.guild.id);
+    let queueSize = serverQueue.songs.size;
     try {
         const typeNumber = parseInt(utils.getMessageContentAfterCommand(message));
         if (typeNumber < 1 || typeNumber > queueSize)
             return message.channel.sendMessage(`Try to input number between 1 and ${queueSize}`);
-        const serverQueue = queue.get(message.guild.id);
         for (let i = 0; i < typeNumber - 1; i++)
-            queue.shift();
+            serverQueue.songs.shift();
 
         serverQueue.connection.dispatcher.end();
     } catch (e) {
