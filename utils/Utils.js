@@ -69,8 +69,7 @@ function getPrettySongDuration(duration) {
 function getMapSize(map) {
     let size = 0;
     for (let value of map.values())
-        for (let song of value.songs)
-            size++;
+        size++;
 
     return size
 }
