@@ -149,6 +149,8 @@ function skipTo(message) {
     if (!message.member.voiceChannel)
         return message.channel.sendMessage('You have to be in a voice channel to skip the music!');
 
+    console.log(utils.getConcatenateValueFromMap(queue));
+    console.log(queue.size);
     const queueSize = queue.size;
     try {
         const typeNumber = parseInt(utils.getMessageContentAfterCommand(message));
