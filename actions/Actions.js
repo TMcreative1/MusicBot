@@ -155,7 +155,7 @@ function skipTo(message) {
         if (typeNumber < 0 || typeNumber > queueSize)
             return message.channel.sendMessage(`Try to input number between 1 and ${queueSize}`);
         const serverQueue = queue.get(message.guild.id);
-        for (let i = 0; i < queueSize - typeNumber; i++)
+        for (let i = 0; i < typeNumber; i++)
             queue.shift();
 
         serverQueue.connection.dispatcher.end();
