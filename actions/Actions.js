@@ -151,7 +151,7 @@ function skipTo(message) {
 
     const queueSize = utils.getMapSize(queue);
     console.log(utils.getConcatenateValueFromMap(queue));
-    console.log(queueSize);
+    console.log(utils.getMapSize(queue));
 
     try {
         const typeNumber = parseInt(utils.getMessageContentAfterCommand(message));
