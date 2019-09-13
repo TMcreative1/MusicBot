@@ -8,7 +8,8 @@ let commands = [
     `${prefix}stop - Stop current track`,
     `${prefix}queue - View queue of tracks`,
     `${prefix}delete - Input size of delete messages(1-100)`,
-    `${prefix}help - Show advanced usage of a command`]
+    `${prefix}volume - Input volume of playing music (1-200)`,
+    `${prefix}help - Show advanced usage of a command`];
 
 let show = function showCommands(message) {
     let commandList = '';

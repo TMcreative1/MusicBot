@@ -10,13 +10,13 @@ const prefix = config.prefix;
 
 bot.once('ready', () => {
     console.log('Ready!');
-})
+});
 bot.once('reconnecting', () => {
     console.log('Reconnecting!');
-})
+});
 bot.once('disconnect', () => {
     console.log('Disconnect!');
-})
+});
 
 bot.on('message', async message => {
     if(message.author === bot.user) return;
@@ -42,10 +42,13 @@ bot.on('message', async message => {
             actions.resume(message);
             break;
         case `${prefix}stop`:
-            actions.stop(message)
+            actions.stop(message);
             break;
         case `${prefix}queue`:
             actions.queue(message);
+            break;
+        case `${prefix}volume`:
+            actions.changeVolume(message);
             break;
         case `${prefix}delete`:
             await actions.deleteMessages(message);
@@ -54,7 +57,7 @@ bot.on('message', async message => {
             commands(message);
             break;
         default:
-            message.channel.sendMessage(`Sorry, unknown command, use !help for list of commands`);
+            await message.channel.sendMessage(`Sorry, unknown command, use !help for list of commands`);
     }
 
 });

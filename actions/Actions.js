@@ -217,6 +217,26 @@ function resume(message) {
     return message.channel.sendMessage('Music was resumed');
 }
 
+function changeVolume(message) {
+    if (utils.isEmpty(queue)) {
+        return message.channel.sendMessage('Queue is empty!');
+    }
+
+    if (!message.member.voiceChannel)
+        return message.channel.sendMessage('You have to be in a voice channel to change the volume!');
+
+    const serverQueue = queue.get(message.guild.id);
+    try {
+        let volume = parseInt(utils.getMessageContentAfterCommand(message)) / 100;
+        if (volume >= 0 && volume <= 2)
+            return serverQueue.connection.dispatcher.setVolume(volume);
+        else
+            return message.channel.sendMessage('Please provide a number between 1 and 200 for the volume');
+    } catch (e) {
+        return message.channel.sendMessage('You need to input number between 1 and 200 for the volume');
+    }
+}
+
 async function deleteMessages(message) {
     try {
         let deleteCount = parseInt(utils.getMessageContentAfterCommand(message));
@@ -244,5 +264,6 @@ module.exports = {
     resume: resume,
     queue: showQueue,
     stop: stop,
+    changeVolume: changeVolume,
     deleteMessages: deleteMessages
 };
