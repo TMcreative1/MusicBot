@@ -9,10 +9,11 @@
   "author": "TMcreative",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^11.5.1",
+    "discord.js": "^11.6.4",
     "ffmpeg": "0.0.4",
     "opusscript": "0.0.7",
+    "parse-server": "^2.8.2",
     "simple-youtube-api": "^5.2.1",
-    "ytdl-core": "^0.29.5"
+    "ytdl-core": "^2.1.1"
   }
 }
